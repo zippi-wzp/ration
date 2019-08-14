@@ -1,0 +1,102 @@
+<div id="available-things" v-cloak>
+
+  <div class="things-container">
+    <h1>Things</h1>
+    <p>View available items to borrow, or upload your own things.</p>
+    <button type="button" class="btn btn-primary" @click="clickAddThing">Add a new thing</button>
+    <div class="card-columns">
+
+      <div v-for="thing in things" @click="clickDeleteThing(thing.id)" class="card" style="width: 18rem;">
+
+        <img :src="thing.imageSrc" class="card-img-top" alt="A mysterious item">
+        <div class="card-body">
+          <h5 class="card-title">Card title</h5>
+          <p>{{thing.label}}</p>
+          <button type="button" class="btn btn-danger">Delete</button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  <!--<h1>TODO: Implement this page.</h1>-->
+  <!--<p>(See also <em>assets/styles/pages/things/available-things.less</em>, <em>assets/js/pages/things/available-things.page.js</em>, and <em>api/controllers/things/view-available-things.js</em>.)</p>-->
+
+  <modal v-if="uploadThingModalOpen" @close="closeAddThingModal">
+    <ajax-form
+      action="uploadThing"
+      :syncing.sync="syncing"
+      :cloud-error.sync="cloudError"
+      :handle-parsing="handleParsingUploadThingForm"
+      @submitted="submittedUploadThingForm">
+      <div class="modal-header">
+        <h5 class="modal-title">Upload a new thing</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <div class="form-group">
+          <label for="fileUpload">Add a photo</label>
+          <input
+            type="file"
+            id="fileUpload"
+            :disabled="syncing"
+            accept="image/*"
+            class="file-input"
+            @change="changeFileInput($event.target.files)"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="label">What is it?</label>
+          <input
+            type="text"
+            class="form-control"
+            id="label"
+            aria-describedby="labelHelp"
+            placeholder="Waffle Iron"
+            @change="changeLabelInput($event.target.value)"
+          >
+        </div>
+
+      </div>
+      <p class="text-danger" v-if="cloudError === 'tooBig'"><small>That file is too big. Please choose a junkier picture.</small></p>
+      <p class="text-danger" v-else-if="cloudError"><small>An error occured while processing your request. Please check your information and try again, or <a href="/support">contact support</a> if the error persists.</small></p>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger">Share item</button>
+        <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+      </div>
+    </ajax-form>
+  </modal>
+
+
+  <% /* Confirm Delete This Modal */ %>
+  <modal v-if="confirmDeleteThingModalOpen && selectedThing" @close="closeDeleteThingModal">
+    <ajax-form
+      action="destroyOneThing"
+      :syncing.sync="syncing"
+      :cloud-error.sync="cloudError"
+      :handle-parsing="handleParsingDeleteThingForm"
+      @submitted="submittedDeleteThingForm()">
+      <div class="modal-header">
+        <h5 class="modal-title">Remove this item?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to remove this {{selectedThing.label || 'item'}}?</p>
+      </div>
+      <p class="text-danger" v-if="cloudError === 'tooBig'"><small>That file is too big. Please choose a junkier picture.</small></p>
+      <p class="text-danger" v-else-if="cloudError"><small>An error occured while processing your request. Please check your information and try again, or <a href="/support">contact support</a> if the error persists.</small></p>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+      </div>
+    </ajax-form>
+  </modal>
+</div>
+<%- /* Expose server-rendered data as window.SAILS_LOCALS :: */ exposeLocalsToBrowser() %>
